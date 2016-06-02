@@ -52,9 +52,11 @@ int main(int argc,char * argv[])
 
 	rc = mdb_txn_begin(env, NULL, 0, &txn);
 	assert(rc == 0);
+	int to_del;
 	for (i=0; i<2000000; i++)
 	{
 		val = rand();
+		if (i==1000000) to_del = val;
 		rc = mdb_put(txn, dbi, &mkey, &mval, 0);
 		assert(rc == 0);
 	}
@@ -62,9 +64,9 @@ int main(int argc,char * argv[])
 	rc = mdb_txn_commit(txn);
 	assert(rc == 0);
 
-	printf("initial state load.\n");
+	printf("initial state load.\n\n");
 
-	// try out navigating the dup value space
+	// full scan
 	rc = mdb_txn_begin(env, NULL, MDB_RDONLY, &txn);
 	assert(rc == 0);
 	rc = mdb_cursor_open(txn, dbi, &cursor);
@@ -78,44 +80,49 @@ int main(int argc,char * argv[])
 	size_t count;
 	rc = mdb_cursor_count(cursor, &count);
 	assert(rc == 0);
-	printf("count: %zu\n", count);
+	printf("count: %zu\n\n", count);
 
-	rc = mdb_cursor_get(cursor, &mkey, &mval, MDB_GET_MULTIPLE);
+	int n;
+	int seen = 0;
+	int alt = 0;
+	while ((rc = mdb_cursor_get(cursor, &mkey, &mval, MDB_NEXT_MULTIPLE)) == 0)
+	{
+		n = mval.mv_size / sizeof(val);
+		seen += n;
+		if (alt % 100 == 0)
+		{
+			printf("key: %d val: %d n: %d\n",
+				*(unsigned int *) mkey.mv_data, *(unsigned int *) mval.mv_data, n);
+		}
+		alt++;
+	}
+	printf("traversed: %d\n\n", seen);
+	assert(rc == MDB_NOTFOUND);
+
+	mdb_cursor_close(cursor);
+	mdb_txn_abort(txn);
+
+	// delete an item
+	rc = mdb_txn_begin(env, NULL, 0, &txn);
 	assert(rc == 0);
-	printf("%lu\n", mval.mv_size / sizeof(val));
-	printf("key: %d val: %d\n",
-		*(unsigned int *) mkey.mv_data, *(unsigned int *) mval.mv_data);
-
-	rc = mdb_cursor_get(cursor, &mkey, &mval, MDB_NEXT_MULTIPLE);
+	val = to_del;
+	printf("delete: %d\n", val);
+	rc = mdb_del(txn, dbi, &mkey, &mval);
 	assert(rc == 0);
-	printf("%lu\n", mval.mv_size / sizeof(val));
-	printf("key: %d val: %d\n",
-		*(unsigned int *) mkey.mv_data, *(unsigned int *) mval.mv_data);
-
-	rc = mdb_cursor_get(cursor, &mkey, &mval, MDB_NEXT_MULTIPLE);
+	rc = mdb_txn_commit(txn);
 	assert(rc == 0);
-	printf("%lu\n", mval.mv_size / sizeof(val));
-	printf("key: %d val: %d\n",
-		*(unsigned int *) mkey.mv_data, *(unsigned int *) mval.mv_data);
 
-	rc = mdb_cursor_get(cursor, &mkey, &mval, MDB_NEXT_MULTIPLE);
+	rc = mdb_txn_begin(env, NULL, MDB_RDONLY, &txn);
 	assert(rc == 0);
-	printf("%lu\n", mval.mv_size / sizeof(val));
-	printf("key: %d val: %d\n",
-		*(unsigned int *) mkey.mv_data, *(unsigned int *) mval.mv_data);
-
-	rc = mdb_cursor_get(cursor, &mkey, &mval, MDB_NEXT_MULTIPLE);
+	rc = mdb_cursor_open(txn, dbi, &cursor);
 	assert(rc == 0);
-	printf("%lu\n", mval.mv_size / sizeof(val));
-	printf("key: %d val: %d\n",
-		*(unsigned int *) mkey.mv_data, *(unsigned int *) mval.mv_data);
 
-	rc = mdb_cursor_get(cursor, &mkey, &mval, MDB_LAST_DUP);
+	rc = mdb_cursor_get(cursor, &mkey, &mval, MDB_SET);
 	assert(rc == 0);
-	printf("%lu\n", mval.mv_size / sizeof(val));
-	printf("key: %d val: %d\n",
-		*(unsigned int *) mkey.mv_data, *(unsigned int *) mval.mv_data);
+	rc = mdb_cursor_count(cursor, &count);
+	assert(rc == 0);
 
+	printf("count: %zu\n\n", count);
 	mdb_cursor_close(cursor);
 	mdb_txn_abort(txn);
 
