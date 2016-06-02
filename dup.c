@@ -29,6 +29,7 @@ int main(int argc,char * argv[])
 	mval.mv_size = sizeof(unsigned int);
 	mval.mv_data = &val;
 
+	setbuf(stdout, NULL);
 	srand(time(NULL));
 
 	// open
@@ -40,6 +41,7 @@ int main(int argc,char * argv[])
 	assert(rc == 0);
 
 	// load initial state
+	printf("loading initial state... ");
 	rc = mdb_txn_begin(env, NULL, 0, &txn);
 	assert(rc == 0);
 	rc = mdb_dbi_open(txn, NULL, COMPACT, &dbi);
@@ -48,7 +50,6 @@ int main(int argc,char * argv[])
 	assert(rc == 0);
 
 	key = rand();
-	printf("key: %d\n", key);
 
 	rc = mdb_txn_begin(env, NULL, 0, &txn);
 	assert(rc == 0);
@@ -64,7 +65,7 @@ int main(int argc,char * argv[])
 	rc = mdb_txn_commit(txn);
 	assert(rc == 0);
 
-	printf("initial state load.\n\n");
+	printf("loaded.\n\n");
 
 	// full scan
 	rc = mdb_txn_begin(env, NULL, MDB_RDONLY, &txn);
