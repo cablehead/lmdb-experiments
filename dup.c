@@ -11,7 +11,8 @@ const unsigned int COMPACT =
 	MDB_DUPSORT | MDB_INTEGERKEY | MDB_DUPFIXED | MDB_INTEGERDUP;
 
 
-int main(int argc,char * argv[])
+int
+main(int argc,char * argv[])
 {
 	int rc;
 	int i;
@@ -54,8 +55,7 @@ int main(int argc,char * argv[])
 	rc = mdb_txn_begin(env, NULL, 0, &txn);
 	assert(rc == 0);
 	int to_del;
-	for (i=0; i<2000000; i++)
-	{
+	for (i=0; i<2000000; i++) {
 		val = rand();
 		if (i==1000000) to_del = val;
 		rc = mdb_put(txn, dbi, &mkey, &mval, 0);
@@ -86,12 +86,10 @@ int main(int argc,char * argv[])
 	int n;
 	int seen = 0;
 	int alt = 0;
-	while ((rc = mdb_cursor_get(cursor, &mkey, &mval, MDB_NEXT_MULTIPLE)) == 0)
-	{
+	while ((rc = mdb_cursor_get(cursor, &mkey, &mval, MDB_NEXT_MULTIPLE)) == 0) {
 		n = mval.mv_size / sizeof(val);
 		seen += n;
-		if (alt % 100 == 0)
-		{
+		if (alt % 100 == 0) {
 			printf("key: %d val: %d n: %d\n",
 				*(unsigned int *) mkey.mv_data, *(unsigned int *) mval.mv_data, n);
 		}
