@@ -1,7 +1,6 @@
 /*
  * File Name: 	map_data.c
  * Name: 	Mariam Issa
- * Company: 	Zebrafish Laboratories
  * Function: 	This function is designed to take in a stream
  *		of JSON data that is already formatted in the
  * 		following form: <url> <key> ... <key> on each
@@ -23,10 +22,9 @@
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
-#include "./lmdb/libraries/liblmdb/lmdb.h"
-#include "./lmdb/libraries/liblmdb/lmdb.h"
-#include "./BLAKE2-master/sse/blake2.h"
-#include "./BLAKE2-master/sse/blake2-impl.h"
+#include "lmdb.h"
+#include "blake2.h"
+#include "blake2-impl.h"
 
 const int NUM_BYTES = 17;
 const int HASH_BYTES = 8;
