@@ -23,8 +23,8 @@
 #include <string.h>
 #include <unistd.h>
 #include "lmdb.h"
-#include "blake2.h"
-#include "blake2-impl.h"
+#include "blake2/sse/blake2.h"
+#include "blake2/sse/blake2-impl.h"
 
 const int NUM_BYTES = 17;
 const int HASH_BYTES = 8;
