@@ -28,8 +28,12 @@
 
 const int NUM_BYTES = 17;
 const int HASH_BYTES = 8;
+const size_t MAX_KEY_COUNT= 1000;
 const unsigned int FLAGS = MDB_DUPSORT |  MDB_DUPFIXED | MDB_CREATE;
+
+
 int byte_to_hex (char outstr[], char *  instr, size_t count);
+
 
 int
 main(int argc, char * argv[]) {
@@ -38,7 +42,7 @@ main(int argc, char * argv[]) {
         int rc, keys_added, duplicates; 
 	size_t count, max_count;
 	char  blake_str [HASH_BYTES];
-        
+
 	MDB_env *env;
         MDB_dbi dbi, dbi_rev;
         MDB_txn *txn;
@@ -46,7 +50,7 @@ main(int argc, char * argv[]) {
 	MDB_stat stats; //store stats for # of data items
 
         // set up key and node info
-        MDB_val mkey, mval;
+        MDB_val mkey, mval, tmp_val;
         char key [NUM_BYTES]; 
         char val [NUM_BYTES];
         
@@ -88,7 +92,8 @@ main(int argc, char * argv[]) {
         for( j = 0; j < HASH_BYTES; ++j ) {       
                 hash_key[j] = ( uint8_t )j;
         }
-	
+
+	// process each line
 	while ( fgets (line, 500, stdin) != NULL ) {       
 
                 token = strtok (line, " ");  //gets url
@@ -97,10 +102,10 @@ main(int argc, char * argv[]) {
                 rc = blake2b (blake_str, HASH_BYTES, token, strlen (token) , hash_key, HASH_BYTES);
                 assert (rc == 0);
 
-		// below is added code to get str to print out correctly
+		// print bytes out in hex
 		rc = byte_to_hex (val, blake_str, sizeof(blake_str));
 		assert (rc == 0);
-
+		
                // process each key 
                 while ((token = strtok (NULL, " ")) != NULL) {     
 
@@ -108,11 +113,18 @@ main(int argc, char * argv[]) {
                         rc = blake2b (blake_str, HASH_BYTES, token, strlen (token), hash_key, HASH_BYTES);
                         assert (rc == 0); 
               	 	
-			// below is added code to get str to print out correctly
+			// print bytes out in hex
 	                rc = byte_to_hex (key, blake_str, sizeof(blake_str));
 			assert (rc == 0);
-			//printf("\n%lu\n", sizeof(key));	
-			//printf("\n%lu\n", sizeof(val));
+			
+			// check if key exists and has too many data entries
+			if ( mdb_cursor_get (cursor, &mkey, &tmp_val, MDB_SET) == 0) {
+				mdb_cursor_count (cursor, &count);
+				if (count >= MAX_KEY_COUNT) {
+					continue;
+
+				}
+			}
 			// enter in database
                 	rc = mdb_cursor_put (cursor, &mkey, &mval, MDB_NODUPDATA);
                 	
@@ -133,14 +145,27 @@ main(int argc, char * argv[]) {
 			rc = mdb_cursor_count (cursor, &count);
 		        assert (rc == 0);
 		
-			fprintf (stdout, "Key: %s\t\t\t Count: %zu \n",  mkey.mv_data, count);
-			if (count >= max_count) {
-				max_count = count;
-			}
-			
+			//fprintf (stdout, "Key: %s\t\t\t Count: %zu \n",  mkey.mv_data, count);
+	
 			// enter in reverse-mapped database
                		rc = mdb_put ( txn, dbi_rev, &mval, &mkey, 0); 
                 	assert (rc == 0);
+			
+			// commits and reset transaction every 10000 additions
+                        if ((keys_added % 10000) == 0) {
+                                printf("Commiting transaction...\n");
+                                //commit transaction
+                                rc = mdb_txn_commit (txn);
+                                assert (rc == 0);
+
+                                // begin transaction
+                                rc = mdb_txn_begin (env, NULL, 0, &txn);
+                                assert (rc == 0);
+
+                                // initiate cursor
+                                rc = mdb_cursor_open (txn, dbi, &cursor);
+                                assert (rc == 0);
+                           }
 		}
 		memset(blake_str, 0, sizeof(blake_str));
 		memset (key, 0, sizeof(key));
@@ -148,8 +173,7 @@ main(int argc, char * argv[]) {
 	
 	}
 	
-	fprintf (stdout, "\nAdded a total of %d keys to the data store \n \n", keys_added);
-	fprintf (stdout, "Max Count: %zu \n", max_count);	
+	fprintf (stdout, "\nAdded a total of %d keys to the data store \n", keys_added);
 	fprintf (stdout, "There were %d duplicates \n", duplicates); 
 	
 	//close cursor
@@ -173,3 +197,5 @@ int byte_to_hex (char outstr[], char * instr, size_t count) {
 	outstr[16] = '\0';
 	return 0;
 }
+
+

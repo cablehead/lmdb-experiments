@@ -9,6 +9,7 @@
 #include "blake2/sse/blake2-impl.h"
 
 const int NUM_BYTES = 17;
+const size_t MAX_KEY_COUNT= 1000;
 const unsigned int FLAGS = MDB_DUPSORT |  MDB_DUPFIXED | MDB_CREATE;
 
 
@@ -16,9 +17,9 @@ int
 main(int argc, char * argv[]) {
 
 	// set up variables
-	int rc;
-	size_t count, max_count;
-	char max_key [NUM_BYTES];
+	int rc, j;
+	size_t count;
+	char * max_keys;
 	MDB_env *env;
         MDB_dbi dbi, dbi_rev;
         MDB_txn *txn;
@@ -68,17 +69,17 @@ main(int argc, char * argv[]) {
 		// get count
 		mdb_cursor_count (cursor, &count);
          	
-		if (count > max_count) {
-			max_count = count;
-			strncpy(max_key, mkey.mv_data, NUM_BYTES);
-		}       	
+	/*	if (count == MAX_KEY_COUNT) {
+			j = sprintf(max_keys + j, "%s\n", mkey.mv_data);//write to buffer
+		}*/
+       	
 		// print key and count
 		fprintf (stdout, "%s\t%lu\n", mkey.mv_data, count);           
 
 		// position cursor at last data item of current key
                 rc = mdb_cursor_get (cursor, &mkey, &mval, MDB_LAST_DUP);
         } 
-	fprintf (stdout,"Key: %s has %lu data items\n", max_key, max_count);
+	//fprintf (stdout,"The following keys have the max ~1000 data entries: %s \n", max_keys);
 
 	//close cursors
         mdb_cursor_close (cursor);
