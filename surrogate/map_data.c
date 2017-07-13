@@ -123,7 +123,6 @@ main(int argc, char * argv[]) {
 				mdb_cursor_count (cursor, &count);
 				if (count >= MAX_KEY_COUNT) {
 					continue;
-
 				}
 			}
 			// enter in database
@@ -152,26 +151,24 @@ main(int argc, char * argv[]) {
                		rc = mdb_put ( txn, dbi_rev, &mval, &mkey, 0); 
                 	assert (rc == 0);
 			
-			// commits and reset transaction every 10000 additions
-                        if ((keys_added % TXN_FREQUENCY) == 0) {
-                                printf("Commiting transaction...\n");
-                                //commit transaction
-                                rc = mdb_txn_commit (txn);
-                                assert (rc == 0);
-
-                                // begin transaction
-                                rc = mdb_txn_begin (env, NULL, 0, &txn);
-                                assert (rc == 0);
-
-                                // initiate cursor
-                                rc = mdb_cursor_open (txn, dbi, &cursor);
-                                assert (rc == 0);
-                           }
 		}
+                  
+                //commit transaction
+                rc = mdb_txn_commit (txn);
+                assert (rc == 0);
+
+                // begin transaction
+                rc = mdb_txn_begin (env, NULL, 0, &txn);
+                assert (rc == 0);
+
+                // initiate cursor
+                rc = mdb_cursor_open (txn, dbi, &cursor);
+                assert (rc == 0);
+          	
+		// reset buffers
 		memset(blake_str, 0, sizeof(blake_str));
 		memset (key, 0, sizeof(key));
 		memset (val, 0, sizeof(val));
-	
 	}
 	
 	fprintf (stdout, "\nAdded a total of %d keys to the data store \n", keys_added);
