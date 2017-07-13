@@ -28,7 +28,8 @@
 
 const int NUM_BYTES = 17;
 const int HASH_BYTES = 8;
-const size_t MAX_KEY_COUNT= 1000;
+const int TXN_FREQUENCY = 10000;
+const size_t MAX_KEY_COUNT= 100000;
 const unsigned int FLAGS = MDB_DUPSORT |  MDB_DUPFIXED | MDB_CREATE;
 
 
@@ -152,7 +153,7 @@ main(int argc, char * argv[]) {
                 	assert (rc == 0);
 			
 			// commits and reset transaction every 10000 additions
-                        if ((keys_added % 10000) == 0) {
+                        if ((keys_added % TXN_FREQUENCY) == 0) {
                                 printf("Commiting transaction...\n");
                                 //commit transaction
                                 rc = mdb_txn_commit (txn);
