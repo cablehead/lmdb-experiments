@@ -156,11 +156,11 @@ main(int argc, char * argv[]) {
                 rc = mdb_txn_commit (txn);
                 assert (rc == 0);
 
-                // begin transaction
+                // reset transaction
                 rc = mdb_txn_begin (env, NULL, 0, &txn);
                 assert (rc == 0);
 
-                // initiate cursor
+                // re-initiate cursor
                 rc = mdb_cursor_open (txn, dbi, &cursor);
                 assert (rc == 0);
           	
