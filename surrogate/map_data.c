@@ -39,7 +39,7 @@ int
 main(int argc, char * argv[]) {
     
 	// set up variables
-        int rc, keys_added, duplicates; 
+        int rc, keys_added, duplicates, lines_read; 
 	size_t count, max_count;
 	char  blake_str [HASH_BYTES];
 
@@ -151,19 +151,23 @@ main(int argc, char * argv[]) {
                 	assert (rc == 0);
 			
 		}
-                  
-                //commit transaction
-                rc = mdb_txn_commit (txn);
-                assert (rc == 0);
+		
+		// track lines read
+                lines_read++;  
+		
+		if ((lines_read % 1000) == 0) {
+                	//commit transaction
+                	rc = mdb_txn_commit (txn);
+                	assert (rc == 0);
 
-                // reset transaction
-                rc = mdb_txn_begin (env, NULL, 0, &txn);
-                assert (rc == 0);
-
-                // re-initiate cursor
-                rc = mdb_cursor_open (txn, dbi, &cursor);
-                assert (rc == 0);
-          	
+                	// reset transaction
+                	rc = mdb_txn_begin (env, NULL, 0, &txn);
+                	assert (rc == 0);
+		
+                	// re-initiate cursor
+                	rc = mdb_cursor_open (txn, dbi, &cursor);
+                	assert (rc == 0);
+          	}
 		// reset buffers
 		memset(blake_str, 0, sizeof(blake_str));
 		memset (key, 0, sizeof(key));
