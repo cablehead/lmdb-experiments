@@ -28,6 +28,7 @@
 
 const int NUM_BYTES = 17;
 const int HASH_BYTES = 8;
+const int COMMIT_TXN = 10000;
 const size_t MAX_KEY_COUNT= 100000;
 const unsigned int FLAGS = MDB_DUPSORT |  MDB_DUPFIXED | MDB_CREATE;
 
@@ -155,7 +156,7 @@ main(int argc, char * argv[]) {
 		// track lines read
                 lines_read++;  
 		
-		if ((lines_read % 1000) == 0) {
+		if ((lines_read % COMMIT_TXN) == 0) {
                 	//commit transaction
                 	rc = mdb_txn_commit (txn);
                 	assert (rc == 0);
