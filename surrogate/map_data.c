@@ -17,12 +17,13 @@
  */
 
 #include <stdio.h>
+#include <time.h>
 #include <stdlib.h>
 #include <sys/errno.h>
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
-#include "lmdb/libraries/liblmdb/lmdb.h"
+#include "lmdb.h"
 #include "blake2/sse/blake2.h"
 #include "blake2/sse/blake2-impl.h"
 
@@ -44,6 +45,11 @@ main(int argc, char * argv[]) {
 	size_t count, max_count;
 	char  blake_str [HASH_BYTES];
 
+	int lines = 0;
+	clock_t begin = clock();
+	clock_t end;
+	double time_spent;
+
 	MDB_env *env;
         MDB_dbi dbi, dbi_rev;
         MDB_txn *txn;
@@ -63,7 +69,7 @@ main(int argc, char * argv[]) {
         // initialize environment; set 2 database limit
         rc = mdb_env_create (&env);
         assert (rc == 0);
-	rc = mdb_env_set_mapsize (env, 100*1024*1024);
+	rc = mdb_env_set_mapsize (env, 1.5*1024*1024*1024);
         assert (rc == 0);
 	rc = mdb_env_set_maxdbs (env, 2); 
         assert (rc == 0);  
@@ -169,6 +175,15 @@ main(int argc, char * argv[]) {
                 	rc = mdb_cursor_open (txn, dbi, &cursor);
                 	assert (rc == 0);
           	}
+
+		lines += 1;
+		if (lines % 100000 == 0) {
+			end = clock();
+			time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+			begin = end;
+			fprintf (stdout, "%d %f\n", lines, time_spent);
+		}
+
 		// reset buffers
 		memset(blake_str, 0, sizeof(blake_str));
 		memset (key, 0, sizeof(key));
