@@ -28,7 +28,8 @@
 
 const int NUM_BYTES = 17;
 const int HASH_BYTES = 8;
-const size_t MAX_KEY_COUNT= 1000;
+const int COMMIT_TXN = 10000;
+const size_t MAX_KEY_COUNT= 100000;
 const unsigned int FLAGS = MDB_DUPSORT |  MDB_DUPFIXED | MDB_CREATE;
 
 
@@ -39,7 +40,7 @@ int
 main(int argc, char * argv[]) {
     
 	// set up variables
-        int rc, keys_added, duplicates; 
+        int rc, keys_added, duplicates, lines_read; 
 	size_t count, max_count;
 	char  blake_str [HASH_BYTES];
 
@@ -122,7 +123,6 @@ main(int argc, char * argv[]) {
 				mdb_cursor_count (cursor, &count);
 				if (count >= MAX_KEY_COUNT) {
 					continue;
-
 				}
 			}
 			// enter in database
@@ -151,26 +151,28 @@ main(int argc, char * argv[]) {
                		rc = mdb_put ( txn, dbi_rev, &mval, &mkey, 0); 
                 	assert (rc == 0);
 			
-			// commits and reset transaction every 10000 additions
-                        if ((keys_added % 10000) == 0) {
-                                printf("Commiting transaction...\n");
-                                //commit transaction
-                                rc = mdb_txn_commit (txn);
-                                assert (rc == 0);
-
-                                // begin transaction
-                                rc = mdb_txn_begin (env, NULL, 0, &txn);
-                                assert (rc == 0);
-
-                                // initiate cursor
-                                rc = mdb_cursor_open (txn, dbi, &cursor);
-                                assert (rc == 0);
-                           }
 		}
+		
+		// track lines read
+                lines_read++;  
+		
+		if ((lines_read % COMMIT_TXN) == 0) {
+                	//commit transaction
+                	rc = mdb_txn_commit (txn);
+                	assert (rc == 0);
+
+                	// reset transaction
+                	rc = mdb_txn_begin (env, NULL, 0, &txn);
+                	assert (rc == 0);
+		
+                	// re-initiate cursor
+                	rc = mdb_cursor_open (txn, dbi, &cursor);
+                	assert (rc == 0);
+          	}
+		// reset buffers
 		memset(blake_str, 0, sizeof(blake_str));
 		memset (key, 0, sizeof(key));
 		memset (val, 0, sizeof(val));
-	
 	}
 	
 	fprintf (stdout, "\nAdded a total of %d keys to the data store \n", keys_added);
@@ -197,5 +199,3 @@ int byte_to_hex (char outstr[], char * instr, size_t count) {
 	outstr[16] = '\0';
 	return 0;
 }
-
-
