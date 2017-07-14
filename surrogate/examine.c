@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
-#include "lmdb/libraries/liblmdb/lmdb.h"
+#include "lmdb.h"
 #include "blake2/sse/blake2.h"
 #include "blake2/sse/blake2-impl.h"
 
