@@ -185,7 +185,8 @@ rc = mdb_txn_commit (txn);
         // print total number of items deleted
         fprintf (stdout,"%d instances of %s deleted from data store\n\n", i, key_to_delete);
 
-        free (key_to_delete);
+        // free malloc-ed buffers
+	free (key_to_delete);
         free (hash_status);
 
         return 0;
