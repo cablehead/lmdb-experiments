@@ -101,7 +101,7 @@ main(int argc, char * argv[]) {
 
                  /***End of Set Up***/
 
- // locate key, get first url
+ 	// locate key, get first url
         rc = mdb_cursor_get (cursor, &key, &url, MDB_SET | MDB_FIRST_DUP);
         if (rc != 0) {
                 fprintf (stderr, "\nERROR: Key not found\n\n");
@@ -132,7 +132,7 @@ main(int argc, char * argv[]) {
                         //position at specified key and url
                         rc = mdb_cursor_get (cursor2, &new_key, &url, MDB_GET_BOTH);
                         if (rc == 0) {
-                                fprintf (stdout, "Deleting from %s: Key %s \tURL %s\n", key.mv_data, new_key.mv_data, url.mv_data);
+                                //fprintf (stdout, "Deleting from %s: Key %s \tURL %s\n", key.mv_data, new_key.mv_data, url.mv_data);
                                 rc = mdb_cursor_del (cursor2, 0);
                                 assert (rc == 0);
                                 i++; //delete total number of items deleted
@@ -152,7 +152,7 @@ main(int argc, char * argv[]) {
                         }
                 }
                 //commit transaction
-rc = mdb_txn_commit (txn);
+		rc = mdb_txn_commit (txn);
                 assert (rc == 0);
 
                 // reset transaction
