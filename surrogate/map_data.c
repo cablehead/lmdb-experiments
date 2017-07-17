@@ -191,7 +191,7 @@ main(int argc, char * argv[]) {
 	}
 	
 	fprintf (stdout, "\nAdded a total of %d keys to the data store \n", keys_added);
-	fprintf (stdout, "There were %d duplicates \n", duplicates); 
+	fprintf (stdout, "\nThere were %d duplicates \n", duplicates); 
 	
 	//close cursor
 	mdb_cursor_close (cursor);
