@@ -30,6 +30,7 @@
 const int NUM_BYTES = 17;
 const int HASH_BYTES = 8;
 const int COMMIT_TXN = 10000;
+const int TIMER = 100000;
 const size_t MAX_KEY_COUNT= 100000;
 const unsigned int FLAGS = MDB_DUPSORT |  MDB_DUPFIXED | MDB_CREATE;
 
@@ -41,7 +42,7 @@ int
 main(int argc, char * argv[]) {
     
 	// set up variables
-        int rc, keys_added, duplicates, lines_read; 
+        int rc, keys_added, duplicates; 
 	size_t count, max_count;
 	char  blake_str [HASH_BYTES];
 
@@ -160,9 +161,9 @@ main(int argc, char * argv[]) {
 		}
 		
 		// track lines read
-                lines_read++;  
+                lines++;  
 		
-		if ((lines_read % COMMIT_TXN) == 0) {
+		if ((lines % COMMIT_TXN) == 0) {
                 	//commit transaction
                 	rc = mdb_txn_commit (txn);
                 	assert (rc == 0);
@@ -176,8 +177,7 @@ main(int argc, char * argv[]) {
                 	assert (rc == 0);
           	}
 
-		lines += 1;
-		if (lines % 100000 == 0) {
+		if (lines % TIMER == 0) {
 			end = clock();
 			time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
 			begin = end;
