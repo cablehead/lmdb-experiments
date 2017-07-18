@@ -172,10 +172,6 @@ main(int argc, char * argv[]) {
 			begin = end;
 			fprintf (stdout, "%d %f\n", lines, time_spent);
 		}
-
-		// reset buffers
-		memset (key, 0, sizeof(key));
-		memset (val, 0, sizeof(val));
 	}
 	
 	fprintf (stdout, "\nAdded a total of %d keys to the data store \n", keys_added);
