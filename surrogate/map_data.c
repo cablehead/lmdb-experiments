@@ -69,13 +69,15 @@ main(int argc, char * argv[]) {
 
         // initialize environment; set 2 database limit
         rc = mdb_env_create (&env);
-        assert (rc == 0);
+        assert (rc == MDB_SUCCESS);
 	rc = mdb_env_set_mapsize (env, 8*1024*1024*1024);
-        assert (rc == 0);
+        assert (rc == MDB_SUCCESS);
+	rc = mdb_env_set_maxreaders (env, 1);
+        assert (rc == MDB_SUCCESS);
 	rc = mdb_env_set_maxdbs (env, 2); 
-        assert (rc == 0);  
+        assert (rc == MDB_SUCCESS);  
         rc = mdb_env_open (env, "./db_dir", 0, 0664);
-        assert (rc == 0); 
+        assert (rc == MDB_SUCCESS); 
 
         // begin transaction
         rc = mdb_txn_begin (env, NULL, 0, &txn);
@@ -83,13 +85,13 @@ main(int argc, char * argv[]) {
 	
 	// open databases 
         rc = mdb_dbi_open (txn, "data_store", FLAGS, &dbi);
-        assert (rc == 0);
+        assert (rc == MDB_SUCCESS);
 	rc = mdb_dbi_open (txn, "rev_data_store", FLAGS, &dbi_rev); 
-        assert(rc == 0); 
+        assert(rc == MDB_SUCCESS); 
 
 	// initiate cursors
         rc = mdb_cursor_open (txn, dbi, &cursor); 
-        assert (rc == 0);
+        assert (rc == MDB_SUCCESS);
 
 	// set up for hashing
         size_t j;
@@ -150,13 +152,13 @@ main(int argc, char * argv[]) {
 			
 			// track count of items at current key
 			rc = mdb_cursor_count (cursor, &count);
-		        assert (rc == 0);
+		        assert (rc == MDB_SUCCESS);
 		
 			//fprintf (stdout, "Key: %s\t\t\t Count: %zu \n",  mkey.mv_data, count);
 	
 			// enter in reverse-mapped database
                		rc = mdb_put ( txn, dbi_rev, &mval, &mkey, 0); 
-                	assert (rc == 0);
+                	assert (rc == MDB_SUCCESS);
 			
 		}
 		
@@ -166,15 +168,15 @@ main(int argc, char * argv[]) {
 		if ((lines % COMMIT_TXN) == 0) {
                 	//commit transaction
                 	rc = mdb_txn_commit (txn);
-                	assert (rc == 0);
+                	assert (rc == MDB_SUCCESS);
 
                 	// reset transaction
                 	rc = mdb_txn_begin (env, NULL, 0, &txn);
-                	assert (rc == 0);
+                	assert (rc == MDB_SUCCESS);
 		
                 	// re-initiate cursor
                 	rc = mdb_cursor_open (txn, dbi, &cursor);
-                	assert (rc == 0);
+                	assert (rc == MDB_SUCCESS);
           	}
 
 		if (lines % TIMER == 0) {
