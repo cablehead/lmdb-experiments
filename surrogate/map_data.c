@@ -31,7 +31,7 @@ const int NUM_BYTES = 17;
 const int HASH_BYTES = 8;
 const int COMMIT_TXN = 10000;
 const int TIMER = 100000;
-const size_t MAP_SIZE = 8*1024*1024*1024;
+const size_t MAP_SIZE = (size_t) 8*1024*1024*1024;
 const size_t MAX_KEY_COUNT= 100000;
 const unsigned int FLAGS = MDB_DUPSORT |  MDB_DUPFIXED | MDB_CREATE;
 
