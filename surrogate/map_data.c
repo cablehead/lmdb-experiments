@@ -70,7 +70,7 @@ main(int argc, char * argv[]) {
         // initialize environment; set 2 database limit
         rc = mdb_env_create (&env);
         assert (rc == 0);
-	rc = mdb_env_set_mapsize (env, 1.5*1024*1024*1024);
+	rc = mdb_env_set_mapsize (env, 8*1024*1024*1024);
         assert (rc == 0);
 	rc = mdb_env_set_maxdbs (env, 2); 
         assert (rc == 0);  
