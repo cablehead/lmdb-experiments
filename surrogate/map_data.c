@@ -27,7 +27,6 @@
 #include "blake2/sse/blake2.h"
 #include "blake2/sse/blake2-impl.h"
 
-const int NUM_BYTES = 17;
 const int HASH_BYTES = 8;
 const int COMMIT_TXN = 10000;
 const int TIMER = 100000;
@@ -56,7 +55,6 @@ main(int argc, char * argv[]) {
         MDB_dbi dbi, dbi_rev;
         MDB_txn *txn;
         MDB_cursor *cursor;
-	MDB_stat stats; //store stats for # of data items
 
         // set up key and node info
         MDB_val mkey, mval, tmp_val;
@@ -82,7 +80,7 @@ main(int argc, char * argv[]) {
 
         // begin transaction
         rc = mdb_txn_begin (env, NULL, 0, &txn);
-        assert (rc == 0); 
+        assert (rc == MDB_SUCCESS); 
 	
 	// open databases 
         rc = mdb_dbi_open (txn, "data_store", FLAGS, &dbi);
@@ -112,10 +110,6 @@ main(int argc, char * argv[]) {
                 // hash URL        
                 rc = blake2b (val, HASH_BYTES, token, strlen (token) , hash_key, HASH_BYTES);
                 assert (rc == 0);
-
-		// print bytes out in hex
-		//rc = byte_to_hex (val, blake_str, sizeof(blake_str));
-		//assert (rc == 0);
 		
                // process each key 
                 while ((token = strtok (NULL, " ")) != NULL) {     
@@ -123,11 +117,7 @@ main(int argc, char * argv[]) {
 			// hash key 
                         rc = blake2b (key, HASH_BYTES, token, strlen (token), hash_key, HASH_BYTES);
                         assert (rc == 0); 
-              	 	
-			// print bytes out in hex
-	                //rc = byte_to_hex (key, blake_str, sizeof(blake_str));
-			//assert (rc == 0);
-			
+              	 		
 			// check if key exists and has too many data entries
 			if ( mdb_cursor_get (cursor, &mkey, &tmp_val, MDB_SET) == 0) {
 				mdb_cursor_count (cursor, &count);
@@ -135,6 +125,7 @@ main(int argc, char * argv[]) {
 					continue;
 				}
 			}
+			
 			// enter in database
                 	rc = mdb_cursor_put (cursor, &mkey, &mval, MDB_NODUPDATA);
                 	
@@ -207,14 +198,3 @@ main(int argc, char * argv[]) {
 
         return 0;
 }
-
-
-int byte_to_hex (char outstr[], char * instr, size_t count) {
-	int i;
-	for (i = 0; i < count; i++) {
-		sprintf (&outstr[2 * i], "%02X",  instr[i]);
-	}
-	outstr[16] = '\0';
-	return 0;
-}
-
