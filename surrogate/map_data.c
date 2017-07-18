@@ -63,9 +63,9 @@ main(int argc, char * argv[]) {
         char key [HASH_BYTES]; 
         char val [HASH_BYTES];
         
-	mkey.mv_size = NUM_BYTES;
+	mkey.mv_size = HASH_BYTES;
         mkey.mv_data = &key;
-        mval.mv_size = NUM_BYTES; 
+        mval.mv_size = HASH_BYTES; 
         mval.mv_data = &val;
 
         // initialize environment; set 2 database limit
