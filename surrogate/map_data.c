@@ -44,7 +44,6 @@ main(int argc, char * argv[]) {
 	// set up variables
         int rc, keys_added, duplicates; 
 	size_t count, max_count;
-	char  blake_str [HASH_BYTES];
 
 	int lines = 0;
 	clock_t begin = clock();
@@ -179,7 +178,6 @@ main(int argc, char * argv[]) {
 		}
 
 		// reset buffers
-		memset(blake_str, 0, sizeof(blake_str));
 		memset (key, 0, sizeof(key));
 		memset (val, 0, sizeof(val));
 	}
