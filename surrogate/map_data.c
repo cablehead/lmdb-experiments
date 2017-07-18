@@ -31,6 +31,7 @@ const int NUM_BYTES = 17;
 const int HASH_BYTES = 8;
 const int COMMIT_TXN = 10000;
 const int TIMER = 100000;
+const size_t MAP_SIZE = 8*1024*1024*1024;
 const size_t MAX_KEY_COUNT= 100000;
 const unsigned int FLAGS = MDB_DUPSORT |  MDB_DUPFIXED | MDB_CREATE;
 
@@ -70,7 +71,7 @@ main(int argc, char * argv[]) {
         // initialize environment; set 2 database limit
         rc = mdb_env_create (&env);
         assert (rc == MDB_SUCCESS);
-	rc = mdb_env_set_mapsize (env, 8*1024*1024*1024);
+	rc = mdb_env_set_mapsize (env, MAP_SIZE);
         assert (rc == MDB_SUCCESS);
 	rc = mdb_env_set_maxreaders (env, 1);
         assert (rc == MDB_SUCCESS);
