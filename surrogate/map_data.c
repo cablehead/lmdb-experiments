@@ -60,8 +60,8 @@ main(int argc, char * argv[]) {
 
         // set up key and node info
         MDB_val mkey, mval, tmp_val;
-        char key [NUM_BYTES]; 
-        char val [NUM_BYTES];
+        char key [HASH_BYTES]; 
+        char val [HASH_BYTES];
         
 	mkey.mv_size = NUM_BYTES;
         mkey.mv_data = &key;
@@ -110,23 +110,23 @@ main(int argc, char * argv[]) {
                 token = strtok (line, " ");  //gets url
 
                 // hash URL        
-                rc = blake2b (blake_str, HASH_BYTES, token, strlen (token) , hash_key, HASH_BYTES);
+                rc = blake2b (val, HASH_BYTES, token, strlen (token) , hash_key, HASH_BYTES);
                 assert (rc == 0);
 
 		// print bytes out in hex
-		rc = byte_to_hex (val, blake_str, sizeof(blake_str));
-		assert (rc == 0);
+		//rc = byte_to_hex (val, blake_str, sizeof(blake_str));
+		//assert (rc == 0);
 		
                // process each key 
                 while ((token = strtok (NULL, " ")) != NULL) {     
 
 			// hash key 
-                        rc = blake2b (blake_str, HASH_BYTES, token, strlen (token), hash_key, HASH_BYTES);
+                        rc = blake2b (key, HASH_BYTES, token, strlen (token), hash_key, HASH_BYTES);
                         assert (rc == 0); 
               	 	
 			// print bytes out in hex
-	                rc = byte_to_hex (key, blake_str, sizeof(blake_str));
-			assert (rc == 0);
+	                //rc = byte_to_hex (key, blake_str, sizeof(blake_str));
+			//assert (rc == 0);
 			
 			// check if key exists and has too many data entries
 			if ( mdb_cursor_get (cursor, &mkey, &tmp_val, MDB_SET) == 0) {
